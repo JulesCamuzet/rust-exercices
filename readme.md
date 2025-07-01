@@ -3,6 +3,6 @@
 Basic coding exercices to learn the basics of the rust language.
 
 This project includes : 
-  - Guessing game
+  - A guessing game
   - A units converter
   - A tasks manager
