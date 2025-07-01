@@ -1,11 +1,12 @@
-use crate::utils;
 use std::fs;
+use crate::utils;
 
-pub fn mark_as_undone() {
+pub fn delete_task() {
+  let index_to_delete = utils::get_a_number(String::from("Enter the index you want to delete (you can only delete done tasks)"));
+
   let data = utils::get_tasks_data().expect("No tasks file.");
   let mut new_data = String::new();
 
-  let index_to_mark = utils::get_a_number(String::from("Enter the index you want to mark as undone."));
   let mut current_done_index = 1;
 
   let lines = data.split("\n");
@@ -36,11 +37,7 @@ pub fn mark_as_undone() {
 
       let is_done = unwrapped_category.eq("DONE");
       
-      if is_done && current_done_index == index_to_mark {
-        new_data.push_str("TODO|");
-        new_data.push_str(task.unwrap().as_str());
-        new_data.push('\n');
-      } else {
+      if !is_done || current_done_index != index_to_delete {
         new_data.push_str(unwrapped_category.as_str());
         new_data.push('|');
         new_data.push_str(task.unwrap().as_str());

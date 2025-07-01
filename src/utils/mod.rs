@@ -19,6 +19,14 @@ pub fn get_a_float(message: String) -> f64 {
   return parsed_result;
 }
 
+pub fn get_a_string(message: String) -> String {
+  let mut entry = String::new();
+  println!("{}", message);
+  stdin().read_line(&mut entry).unwrap();
+  
+  return entry;
+}
+
 pub fn get_tasks_data() -> Option<String> {
   if !fs::exists("./src/tasks.txt").expect("Error while fileExists.") {
     return None

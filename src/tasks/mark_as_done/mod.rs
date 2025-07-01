@@ -2,59 +2,57 @@ use crate::utils;
 use std::fs;
 
 pub fn mark_as_done() {
-  let index_to_mark = utils::get_a_number(String::from("Enter the task index that you want to mark as done :"));
-
-  let get_tasks_result = utils::get_tasks_data();
-
-  if get_tasks_result.is_none() {
-    println!("No tasks file created yet.");
-    return
-  }
-
-  let data = get_tasks_result.unwrap();
+  let data = utils::get_tasks_data().expect("No tasks file.");
   let mut new_data = String::new();
 
-  let mut task_to_mark = String::new();
+  let index_to_mark = utils::get_a_number(String::from("Enter the index you want to mark as done."));
+  let mut current_todo_index = 1;
 
-  let global_split = data.split('|');
-  let mut global_index = 0;
+  let lines = data.split("\n");
 
-  for part in global_split {
-    let we_are_in_todos = global_index == 0;
-    let tasks_split = part.split('\n');
+  for line in lines {
+    let mut category: Option<String> = None;
+    let mut task: Option<String> = None;
 
-    if we_are_in_todos {
-      let mut task_index = 0;
+    let mut line_part_index = 0;
 
-      for task in tasks_split {
-        task_index += 1;
+    let line_parts = line.split("|");
 
-        if task_index != index_to_mark {
-          let mut line_to_push = task.to_string();
-          line_to_push.push_str("\n");
-          new_data.push_str(line_to_push.as_str());
-        } else {
-          task_to_mark = task.to_string();
-        }
-
-        task_index += 1;
+    for part in line_parts {
+      let cleaned_part = part.trim();
+      let current_part_is_category = line_part_index == 0;
+      
+      if current_part_is_category && (cleaned_part.eq("TODO") || cleaned_part.eq("DONE")) {
+        let _ = category.insert(String::from(cleaned_part));
+      } else if !current_part_is_category && !cleaned_part.eq("") {
+        let _ = task.insert(String::from(cleaned_part));
       }
 
-      new_data.push_str("|\n");
-    } else {
-      for task in tasks_split {
-        let mut line_to_push = task.to_string();
-        // line_to_push.push_str("\n");
-        new_data.push_str(line_to_push.as_str());
-      }
-
-      let mut line_to_push = task_to_mark.to_string();
-      line_to_push.push_str("\n");
-      new_data.push_str(line_to_push.as_str());
+      line_part_index += 1;
     }
 
-    global_index += 1;
+    if !task.is_none() && !category.is_none() {
+      let unwrapped_category = category.unwrap();
+
+      let is_todo = unwrapped_category.eq("TODO");
+
+      
+      if is_todo && current_todo_index == index_to_mark {
+        new_data.push_str("DONE|");
+        new_data.push_str(task.unwrap().as_str());
+        new_data.push('\n');
+      } else {
+        new_data.push_str(unwrapped_category.as_str());
+        new_data.push('|');
+        new_data.push_str(task.unwrap().as_str());
+        new_data.push('\n');
+      }
+
+      if is_todo {
+        current_todo_index += 1;
+      }
+    }
   }
 
-  fs::write("./src/tasks.txt", new_data).expect("Error while writing file.");
+  fs::write("./src/tasks.txt", new_data.trim()).expect("Error while writing file");
 }
